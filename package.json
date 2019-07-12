@@ -1,0 +1,22 @@
+{
+	"name": "rpio-lcd",
+	"version": "0.0.1",
+	"description": "Control character LCDs with your Pi!",
+	"main": "index.js",
+	"scripts": {},
+	"repository": {
+	  "type": "git",
+	  "url": "git+https://github.com/ARitz-Cracker/rpio-lcd"
+	},
+	"keywords": [],
+	"author": {
+	  "name": "Aritz Beobide-Cardinal",
+	  "email": "aritz@aritzcracker.ca"
+	},
+	"bugs": {
+	  "url": "https://github.com/ARitz-Cracker/rpio-lcd/issues"
+	},
+	"homepage": "https://github.com/ARitz-Cracker/rpio-lcd#readme",
+	"devDependencies": {},
+	"dependencies": {"rpio":"^1.0.13"}
+}
