@@ -157,7 +157,7 @@ class LCDScreen {
 	writeText(bytes) {
 		this.registerSelect(true);
 		if (!(bytes instanceof Uint8Array)){
-			bytes = Buffer.from(bytes);
+			bytes = Buffer.from(bytes, "ascii");
 		}
 		for (let i = 0; i < bytes.length; i += 1){
 			this.sendByte(bytes[i]);
