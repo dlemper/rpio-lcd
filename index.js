@@ -39,6 +39,7 @@ class LCDScreen {
 		this.sendByte(0b00001101); // Enable display with blinking cursor
 		this.cursorConfig = 0b101;
 		this.sendByte(0b00000001); // Clear Display
+		rpio.msleep(2); // Screen needs 1.52 ms to clear display
 		this.sendByte(0b00000110); // When text is sent, cursor moves to the right, display doesn't move
 		this.sendByte(0b10000000); // Make sure we're in DDRAM mode 
 	}
