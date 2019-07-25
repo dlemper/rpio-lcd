@@ -88,16 +88,9 @@ class LCDScreen {
 			pinsToChange[this.dataPins[2]] = ((nib & 0b0010) > 0) | 0;
 			pinsToChange[this.dataPins[3]] = ((nib & 0b0100) > 0) | 0;
 			pinsToChange[this.dataPins[4]] = ((nib & 0b1000) > 0) | 0;
-			if (this.clockIO == this.dataIO){
-				// The enable pin is falling edge triggered, so I can get away with this
-				pinsToChange[this.clockPin] = rpio.HIGH;
-				this.dataIO.writeByte(pinsToChange);
-				this.clockIO.write(this.clockPin, rpio.LOW);
-				rpio.usleep(40);
-			}else{
-				this.dataIO.writeByte(pinsToChange);
-				this.pulse();
-			}
+			this.dataIO.writeByte(pinsToChange);
+			this.pulse();
+			
 		}else{
 			this.dataIO.write(this.dataPins[1], ((nib & 0b0001) > 0) | 0);
 			this.dataIO.write(this.dataPins[2], ((nib & 0b0010) > 0) | 0);
@@ -133,7 +126,7 @@ class LCDScreen {
 		this.sendByte(0b00000010);
 		rpio.msleep(2);
 		for (let i = 0; i < 40; i += 1){
-			screen.sendByte(0b00010100);
+			this.sendByte(0b00010100);
 		}
 	}
 	textLeft() {

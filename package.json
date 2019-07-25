@@ -1,6 +1,6 @@
 {
 	"name": "rpio-lcd",
-	"version": "0.0.3",
+	"version": "0.0.4",
 	"description": "Control character LCDs with your Pi!",
 	"main": "index.js",
 	"scripts": {},
