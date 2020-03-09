@@ -15,7 +15,7 @@ The characters beyond 0x7f include japanese katakana, some greek letters, and ma
 
 ```js
 const rpio = require("rpio");
-const {LCDScreen} = require("rpio-lcd");
+const LCDScreen = require("rpio-lcd");
 
 // Initialize an LCD screen!
 const screen = new LCDScreen({
@@ -28,7 +28,7 @@ const screen = new LCDScreen({
 	clockPin: 12,
 	// This is optional, you can specify a ShiftRegister from "rpio-shift" here if the above pin is connected to one
 	clockIO: null
-})
+});
 
 // screen.displayOn(bool)
 // If true, the display is shown. You can still write or send commands to the LCD while the screen is hidden
