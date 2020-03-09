@@ -1,5 +1,35 @@
 const rpio = require("rpio");
 
+const COMMANDS = {
+  CLEAR_DISPLAY: 0x01,
+  RETURN_HOME: 0x02,
+  ENTRY_MODE_SET: 0x04,
+	DISPLAY_CONTROL: 0x08,
+	CURSOR_OR_DISPLAY_SHIFT: 0x10,
+	FUNCTION_SET: 0x20,
+	SET_CGRAM_ADDRESS: 0x40,
+  SET_CURSOR: 0x80,
+};
+
+const FLAGS = {
+  // entry mode set
+  AUTOSCROLL_ON: 0x01,
+  LEFT_TO_RIGHT: 0x02,
+
+  // display control
+	BLINK_ON: 0x01,
+  CURSOR_ON: 0x02,
+  DISPLAY_ON: 0x04,
+	
+	// cursor or display shift
+	SHIFT_RIGHT: 0x04,
+	DISPLAY_SHIFT: 0x08,
+
+  // function set
+  LARGE_FONT: 0x04,
+  MULTIPLE_LINES: 0x08,
+}
+
 class LCDScreen {
 	constructor(options) {
 		/*
@@ -41,44 +71,43 @@ class LCDScreen {
 		this.pulse();
 		this.sendByte(0b00101000); // 4 bit mode, 2 lines (tested with an 16x2 screen), 5x8 font
 		this.sendByte(0b00001101); // Enable display with blinking cursor
-		this.cursorConfig = 0b101;
-		this.sendByte(0b00000001); // Clear Display
-		rpio.msleep(2); // Screen needs 1.52 ms to clear display
-		this.sendByte(0b00000110); // When text is sent, cursor moves to the right, display doesn't move
+		this.cursorConfig = FLAGS.DISPLAY_ON | FLAGS.BLINK_ON;
+		this.clear() // Clear Display
+		this.sendByte(COMMANDS.ENTRY_MODE_SET | FLAGS.LEFT_TO_RIGHT); // When text is sent, cursor moves to the right, display doesn't move
 		this.sendByte(0b10000000); // Make sure we're in DDRAM mode 
 	}
 
 	displayOn(showText) {
 		if (showText) {
-			this.cursorConfig |= 0b100;
+			this.cursorConfig |= FLAGS.DISPLAY_ON;
 		} else {
-			this.cursorConfig &= 0b011;
+			this.cursorConfig &= ~FLAGS.DISPLAY_ON;
 		}
 
 		this.registerSelect(false);
-		this.sendByte(0b00001000 | this.cursorConfig);
+		this.sendByte(COMMANDS.DISPLAY_CONTROL | this.cursorConfig);
 	}
 
 	cursorBlink(blink) {
 		if (blink) {
-			this.cursorConfig |= 0b001;
+			this.cursorConfig |= FLAGS.BLINK_ON;
 		} else {
-			this.cursorConfig &= 0b110;
+			this.cursorConfig &= ~FLAGS.BLINK_ON;
 		}
 
 		this.registerSelect(false);
-		this.sendByte(0b00001000 | this.cursorConfig);
+		this.sendByte(COMMANDS.DISPLAY_CONTROL | this.cursorConfig);
 	}
 
 	cursorUnderscore(underscore) {
 		if (underscore) {
-			this.cursorConfig |= 0b010;
+			this.cursorConfig |= FLAGS.CURSOR_ON;
 		} else {
-			this.cursorConfig &= 0b101;
+			this.cursorConfig &= ~FLAGS.CURSOR_ON;
 		}
 
 		this.registerSelect(false);
-		this.sendByte(0b00001000 | this.cursorConfig);
+		this.sendByte(COMMANDS.DISPLAY_CONTROL | this.cursorConfig);
 	}
 
 	registerSelect(sendData) {
@@ -119,30 +148,28 @@ class LCDScreen {
 
 	clear() {
 		this.registerSelect(false);
-		this.sendByte(0b00000001);
-		rpio.msleep(2);
+		this.sendByte(COMMANDS.CLEAR_DISPLAY);
+		rpio.msleep(2); // Screen needs 1.52 ms to clear display
 	}
 
 	cursorLeft() {
 		this.registerSelect(false);
-		this.sendByte(0b00010000);
+		this.sendByte(COMMANDS.CURSOR_OR_DISPLAY_SHIFT);
 	}
 
 	cursorRight() {
 		this.registerSelect(false);
-		this.sendByte(0b00010100);
+		this.sendByte(COMMANDS.CURSOR_OR_DISPLAY_SHIFT | FLAGS.SHIFT_RIGHT);
 	}
 
 	cursorHome() {
 		this.registerSelect(false);
-		this.sendByte(0b00000010);
+		this.sendByte(COMMANDS.RETURN_HOME);
 		rpio.msleep(2);
 	}
 
 	cursorSecondLine() {
-		this.registerSelect(false);
-		this.sendByte(0b00000010);
-		rpio.msleep(2);
+		this.cursorHome();
 
 		for (let i = 0; i < 40; i += 1){
 			this.sendByte(0b00010100);
@@ -188,7 +215,7 @@ class LCDScreen {
 
 	writeMode(goRight, moveScreen) {
 		this.registerSelect(false);
-		this.sendByte(0b00000100 | (goRight ? 0b10 : 0) | (moveScreen | 0));
+		this.sendByte(COMMANDS.ENTRY_MODE_SET | (goRight ? FLAGS.LEFT_TO_RIGHT : 0) | (moveScreen | 0));
 	}
 }
 
