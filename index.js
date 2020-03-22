@@ -49,7 +49,7 @@ class LCDScreen {
 			options.pins[1],
 			options.pins[2],
 			options.pins[3],
-			options.pins[4]
+			options.pins[4],
 		];
 
 		this.cols = options.columns || 16;
@@ -224,7 +224,7 @@ class LCDScreen {
 
 		for (let i = 0; i < bytes.length; i++) {
 			this.sendByte(bytes[i]);
-			rpio.msleep()
+			rpio.msleep();
 		}
 	}
 
