@@ -61,7 +61,7 @@ class LCDScreen {
 		this.lastRegisterSelect = false;
 		this.rowOffsets = [0x00, 0x40, 0x00 + this.cols, 0x40 + this.cols];
 
-		const functionSetFLAGS = 0;
+		let functionSetFLAGS = 0;
 		if (this.rows > 1) {
 			functionSetFLAGS |= FLAGS.MULTIPLE_LINES;
 		}
