@@ -135,21 +135,19 @@ class LCDScreen {
 	}
 
 	sendNibble(nib) {
-		if (this.dataIO.isShiftRegister){
-			let pinsToChange = [];
-			pinsToChange[this.dataPins[1]] = ((nib & 0b0001) > 0) | 0;
-			pinsToChange[this.dataPins[2]] = ((nib & 0b0010) > 0) | 0;
-			pinsToChange[this.dataPins[3]] = ((nib & 0b0100) > 0) | 0;
-			pinsToChange[this.dataPins[4]] = ((nib & 0b1000) > 0) | 0;
-			this.dataIO.writeByte(pinsToChange);
-			this.pulse();
+		if (this.dataIO.isShiftRegister) {
+			const pinsToChange = this.dataPins
+				.slice(1)
+				.map((pin, idx) => [pin, (nib >> idx) & 1]);
+	
+			this.dataIO.writeByte(Object.fromEntries(pinsToChange));
 		} else {
-			this.dataIO.write(this.dataPins[1], ((nib & 0b0001) > 0) | 0);
-			this.dataIO.write(this.dataPins[2], ((nib & 0b0010) > 0) | 0);
-			this.dataIO.write(this.dataPins[3], ((nib & 0b0100) > 0) | 0);
-			this.dataIO.write(this.dataPins[4], ((nib & 0b1000) > 0) | 0);
-			this.pulse();
+			this.dataPins
+				.slice(1)
+				.forEach((pin, idx) => this.dataIO.write(pin, (nib >> idx) & 1));
 		}
+			
+		this.pulse();
 	}
 
 	sendByte(byte) {
