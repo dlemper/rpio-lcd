@@ -1,33 +1,34 @@
 const rpio = require("rpio");
 
 const COMMANDS = {
-  CLEAR_DISPLAY: 0x01,
-  RETURN_HOME: 0x02,
-  ENTRY_MODE_SET: 0x04,
+	CLEAR_DISPLAY: 0x01,
+	RETURN_HOME: 0x02,
+	ENTRY_MODE_SET: 0x04,
 	DISPLAY_CONTROL: 0x08,
 	CURSOR_OR_DISPLAY_SHIFT: 0x10,
 	FUNCTION_SET: 0x20,
 	SET_CGRAM_ADDRESS: 0x40,
-  SET_CURSOR: 0x80,
+	SET_CURSOR: 0x80,
 };
 
 const FLAGS = {
-  // entry mode set
-  AUTOSCROLL_ON: 0x01,
-  LEFT_TO_RIGHT: 0x02,
+	// entry mode set
+	AUTOSCROLL_ON: 0x01,
+	LEFT_TO_RIGHT: 0x02,
 
-  // display control
+	// display control
 	BLINK_ON: 0x01,
-  CURSOR_ON: 0x02,
-  DISPLAY_ON: 0x04,
-	
+	CURSOR_ON: 0x02,
+	DISPLAY_ON: 0x04,
+
 	// cursor or display shift
 	SHIFT_RIGHT: 0x04,
 	DISPLAY_SHIFT: 0x08,
 
-  // function set
-  LARGE_FONT: 0x04,
-  MULTIPLE_LINES: 0x08,
+	// function set
+	EIGHT_BIT_MODE: 0x01,
+	LARGE_FONT: 0x04,
+	MULTIPLE_LINES: 0x08,
 }
 
 class LCDScreen {
@@ -38,6 +39,9 @@ class LCDScreen {
 			dataIO: rpio / ShiftRegister
 			clockPin: CLK
 			clockIO: rpio / ShiftRegister
+			largeFont: true/false
+			rows: 1-4
+			columns: 8-20
 		}
 		*/
 		this.dataPins = [
@@ -53,6 +57,14 @@ class LCDScreen {
 		this.clockIO = options.clockIO || rpio;
 		this.lastRegisterSelect = false;
 
+		const functionSetFLAGS = 0;
+		if (this.numRows > 1) {
+			functionSetFLAGS |= MULTIPLE_LINES;
+		}
+		if (this.numRows === 1 && !!options.largeFont) {
+			functionSetFLAGS |= LARGE_FONT;
+		}
+
 		for (let i = 0; i < 5; i += 1){
 			this.dataIO.open(this.dataPins[i], rpio.OUTPUT, rpio.LOW);
 		}
@@ -60,21 +72,20 @@ class LCDScreen {
 		this.clockIO.open(this.clockPin, rpio.OUTPUT, rpio.LOW);
 
 		// Reset the LCD screen to 8 bit mode
-		this.dataIO.write(this.dataPins[1], rpio.HIGH);
-		this.dataIO.write(this.dataPins[2], rpio.HIGH);
+		this.sendNibble(COMMANDS.FUNCTION_SET | FLAGS.EIGHT_BIT_MODE);
 		this.pulse(); // Yes, there are supposed to be 3.
 		this.pulse();
 		this.pulse();
 
 		// Set the LCD screen to 4 bit mode
-		this.dataIO.write(this.dataPins[1], rpio.LOW);
+		this.sendNibble(COMMANDS.FUNCTION_SET);
 		this.pulse();
-		this.sendByte(0b00101000); // 4 bit mode, 2 lines (tested with an 16x2 screen), 5x8 font
-		this.sendByte(0b00001101); // Enable display with blinking cursor
+		this.sendByte(COMMANDS.FUNCTION_SET | functionSetFLAGS);
 		this.cursorConfig = FLAGS.DISPLAY_ON | FLAGS.BLINK_ON;
-		this.clear() // Clear Display
+		this.sendByte(COMMANDS.DISPLAY_CONTROL | this.cursorConfig); // Enable display with blinking cursor
+		this.clear();
 		this.sendByte(COMMANDS.ENTRY_MODE_SET | FLAGS.LEFT_TO_RIGHT); // When text is sent, cursor moves to the right, display doesn't move
-		this.sendByte(0b10000000); // Make sure we're in DDRAM mode 
+		this.sendByte(COMMANDS.SET_CURSOR); // Make sure we're in DDRAM mode
 	}
 
 	displayOn(showText) {
