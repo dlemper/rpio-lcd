@@ -40,8 +40,8 @@ class LCDScreen {
 			clockPin: CLK
 			clockIO: rpio / ShiftRegister
 			largeFont: true/false
-			rows: 1-4
-			columns: 8-20
+			rows: 1-4 (default: 2)
+			columns: 8-20 (default: 16)
 		}
 		*/
 		this.dataPins = [
@@ -52,16 +52,20 @@ class LCDScreen {
 			options.pins[4]
 		];
 
+		this.cols = options.columns || 16;
+		this.rows = options.rows || 2;
+
 		this.dataIO = options.dataIO || rpio;
 		this.clockPin = options.clockPin;
 		this.clockIO = options.clockIO || rpio;
 		this.lastRegisterSelect = false;
+		this.rowOffsets = [0x00, 0x40, 0x00 + this.cols, 0x40 + this.cols];
 
 		const functionSetFLAGS = 0;
-		if (this.numRows > 1) {
+		if (this.rows > 1) {
 			functionSetFLAGS |= MULTIPLE_LINES;
 		}
-		if (this.numRows === 1 && !!options.largeFont) {
+		if (this.rows === 1 && !!options.largeFont) {
 			functionSetFLAGS |= LARGE_FONT;
 		}
 
@@ -161,6 +165,12 @@ class LCDScreen {
 		rpio.msleep(2); // Screen needs 1.52 ms to clear display
 	}
 
+	setCursor(col, row) {
+    const pos = col + this.rowOffsets[row % this.rows];
+    
+		this.sendByte(COMMANDS.SET_CURSOR | pos);
+  }
+
 	cursorLeft() {
 		this.registerSelect(false);
 		this.sendByte(COMMANDS.CURSOR_OR_DISPLAY_SHIFT);
@@ -178,11 +188,7 @@ class LCDScreen {
 	}
 
 	cursorSecondLine() {
-		this.cursorHome();
-
-		for (let i = 0; i < 40; i++) {
-			this.cursorRight();
-		}
+		this.setCursor(0, 1);
 	}
 
 	textLeft() {
