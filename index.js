@@ -35,7 +35,7 @@ class LCDScreen {
 	constructor(options) {
 		/*
 		{
-			dataPins[RS, b4, b5, b6, b7]
+			pins[RS, b4, b5, b6, b7]
 			dataIO: rpio / ShiftRegister
 			clockPin: CLK
 			clockIO: rpio / ShiftRegister
@@ -63,10 +63,10 @@ class LCDScreen {
 
 		const functionSetFLAGS = 0;
 		if (this.rows > 1) {
-			functionSetFLAGS |= MULTIPLE_LINES;
+			functionSetFLAGS |= FLAGS.MULTIPLE_LINES;
 		}
 		if (this.rows === 1 && !!options.largeFont) {
-			functionSetFLAGS |= LARGE_FONT;
+			functionSetFLAGS |= FLAGS.LARGE_FONT;
 		}
 
 		for (let i = 0; i < 5; i++){
