@@ -39,7 +39,7 @@ class LCDScreen {
 			dataIO: rpio / ShiftRegister
 			clockPin: CLK
 			clockIO: rpio / ShiftRegister
-			largeFont: true/false
+			largeFont: true/false (only possible on single row displays that support 5x10 font)
 			rows: 1-4 (default: 2)
 			columns: 8-20 (default: 16)
 		}
