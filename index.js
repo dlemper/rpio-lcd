@@ -65,7 +65,7 @@ class LCDScreen {
 			functionSetFLAGS |= LARGE_FONT;
 		}
 
-		for (let i = 0; i < 5; i += 1){
+		for (let i = 0; i < 5; i++){
 			this.dataIO.open(this.dataPins[i], rpio.OUTPUT, rpio.LOW);
 		}
 
@@ -152,7 +152,7 @@ class LCDScreen {
 
 	sendByte(byte) {
 		this.sendNibble(byte >> 4);
-		this.sendNibble(byte & 0b1111);
+		this.sendNibble(byte & 0x0f);
 	}
 
 	clear() {
@@ -180,43 +180,43 @@ class LCDScreen {
 	cursorSecondLine() {
 		this.cursorHome();
 
-		for (let i = 0; i < 40; i += 1){
-			this.sendByte(0b00010100);
+		for (let i = 0; i < 40; i++) {
+			this.cursorRight();
 		}
 	}
 
 	textLeft() {
 		this.registerSelect(false);
-		this.sendByte(0b00011000);
+		this.sendByte(COMMANDS.CURSOR_OR_DISPLAY_SHIFT | FLAGS.DISPLAY_SHIFT);
 	}
 
 	textRight() {
 		this.registerSelect(false);
-		this.sendByte(0b00011100);
+		this.sendByte(COMMANDS.CURSOR_OR_DISPLAY_SHIFT | FLAGS.DISPLAY_SHIFT | FLAGS.SHIFT_RIGHT);
 	}
 
 	setCustomChar(location, bytes) {
-		location &= 0x7; // we only have 8 locations 0-7
+		location &= 0x07; // we only have 8 locations 0-7
 		this.registerSelect(false);
-		this.sendByte(0b01000000 | location << 3); // Set to "Write CGRAM" mode
+		this.sendByte(COMMANDS.SET_CGRAM_ADDRESS | location << 3); // Set to "Write CGRAM" mode
 		this.registerSelect(true);
 
-		for (let i = 0; i < 8; i += 1){
+		for (let i = 0; i < 8; i++) {
 			this.sendByte(bytes[i]);
 		}
 
 		this.registerSelect(false);
-		screen.sendByte(0b10000000); // Set to normal text mode
+		screen.sendByte(COMMANDS.SET_CURSOR); // Set to normal text mode
 	}
 
 	writeText(bytes) {
 		this.registerSelect(true);
 
-		if (!(bytes instanceof Uint8Array)){
+		if (!(bytes instanceof Uint8Array)) {
 			bytes = Buffer.from(bytes, "ascii");
 		}
 
-		for (let i = 0; i < bytes.length; i += 1){
+		for (let i = 0; i < bytes.length; i++) {
 			this.sendByte(bytes[i]);
 			rpio.msleep()
 		}
