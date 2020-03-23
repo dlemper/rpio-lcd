@@ -224,8 +224,10 @@ class LCDScreen {
 
 		for (let i = 0; i < bytes.length; i++) {
 			this.sendByte(bytes[i]);
-			rpio.msleep();
+			rpio.msleep(1);
 		}
+		
+		this.registerSelect(false);
 	}
 
 	writeMode(goRight, moveScreen) {
